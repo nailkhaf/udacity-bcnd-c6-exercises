@@ -6,7 +6,6 @@ contract ExerciseC6A {
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
-
     struct UserProfile {
         bool isRegistered;
         bool isAdmin;
@@ -46,17 +45,15 @@ contract ExerciseC6A {
     /**
     * @dev Modifier that requires the "ContractOwner" account to be the function caller
     */
-    modifier requireContractOwner()
-    {
+    modifier requireContractOwner() {
         require(msg.sender == contractOwner, "Caller is not contract owner");
         _;
     }
 
     modifier requireIsOperational() {
-        require(operational);
+        require(operational, "Contract is not operational");
         _;
     }
-
 
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
@@ -104,11 +101,29 @@ contract ExerciseC6A {
         return operational;
     }
 
+    uint constant M = 2;
+    address[] multiCalls = new address[](0);
 
     function setOperatingStatus(
         bool _operational
-    ) external requireContractOwner {
-        operational = _operational;
+    ) external {
+        require(_operational != operational, "New mode must be different from existing mode");
+        require(userProfiles[msg.sender].isAdmin, "Caller is not an admin");
+
+        bool isDuplicate = false;
+        for(uint c=0; c<multiCalls.length; c++) {
+            if (multiCalls[c] == msg.sender) {
+                isDuplicate = true;
+                break;
+            }
+        }
+        require(!isDuplicate, "Caller has already called this function.");
+
+        multiCalls.push(msg.sender);
+        if (multiCalls.length >= M) {
+            operational = _operational;
+            multiCalls = new address[](0);
+        }
     }
 }
 

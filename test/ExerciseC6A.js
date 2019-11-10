@@ -21,15 +21,40 @@ contract('ExerciseC6A', async (accounts) => {
     assert.equal(result, true, "Contract owner cannot register new user");
   });
 
-  it('contract owner can pause contract', async () => {
+  // it('contract owner can pause contract', async () => {
+  //   // ARRANGE
+  //   let caller = config.owner // This should be config.owner or accounts[0] for registering a new user
+
+  //   // ACT
+  //   await config.exerciseC6A.setOperatingStatus(true, {from: caller});
+  //   let result = await config.exerciseC6A.isOperational.call();
+
+  //   // ASSERT
+  //   assert.equal(result, true, "Contract owner cannot register new user");
+  // });
+
+  it('function call is made when multi-party threshold is reached', async () => {
+
     // ARRANGE
-    let caller = config.owner // This should be config.owner or accounts[0] for registering a new user
+    let admin1 = accounts[1];
+    let admin2 = accounts[2];
+    let admin3 = accounts[3];
+
+    await config.exerciseC6A.registerUser(admin1, true, {from: config.owner});
+    await config.exerciseC6A.registerUser(admin2, true, {from: config.owner});
+    await config.exerciseC6A.registerUser(admin3, true, {from: config.owner});
+
+    let startStatus = await config.exerciseC6A.isOperational.call();
+    let changeStatus = !startStatus;
 
     // ACT
-    await config.exerciseC6A.setOperatingStatus(true, {from: caller});
-    let result = await config.exerciseC6A.isOperational.call();
+    await config.exerciseC6A.setOperatingStatus(changeStatus, {from: admin1});
+    await config.exerciseC6A.setOperatingStatus(changeStatus, {from: admin2});
+
+    let newStatus = await config.exerciseC6A.isOperational.call();
 
     // ASSERT
-    assert.equal(result, true, "Contract owner cannot register new user");
+    assert.equal(changeStatus, newStatus, "Multi-party call failed");
+
   });
 });
