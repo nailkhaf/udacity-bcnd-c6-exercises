@@ -12,6 +12,7 @@
   },
   "author": "Nik Kalyani <nik@kalyani.com> https://www.kalyani.com",
   "devDependencies": {
+    "eslint": "^6.6.0",
     "truffle": "^4.1.14",
     "truffle-hdwallet-provider": "^0.0.5"
   },
