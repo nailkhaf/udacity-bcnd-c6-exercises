@@ -25,6 +25,8 @@ contract ExerciseC6C {
 
     address private contractOwner;              // Account used to deploy contract
     mapping(string => Profile) employees;      // Mapping for storing employees
+    mapping(address => bool) authorizedContracts;
+
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -42,6 +44,7 @@ contract ExerciseC6C {
                                 public
     {
         contractOwner = msg.sender;
+        authorizedContracts[msg.sender] = true;
     }
 
     /********************************************************************************************/
@@ -60,6 +63,12 @@ contract ExerciseC6C {
         _;
     }
 
+    modifier requireCallerAutorized()
+    {
+        require(authorizedContracts[msg.sender], "Caller is not authorized");
+        _;
+    }
+
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
@@ -75,6 +84,7 @@ contract ExerciseC6C {
                             )
                             external
                             view
+                            requireCallerAutorized()
                             returns(bool)
     {
         return employees[id].isRegistered;
@@ -91,7 +101,7 @@ contract ExerciseC6C {
                                     address wallet
                                 )
                                 external
-                                requireContractOwner
+                                requireCallerAutorized()
     {
         require(!employees[id].isRegistered, "Employee is already registered.");
 
@@ -111,7 +121,7 @@ contract ExerciseC6C {
                             )
                             external
                             view
-                            requireContractOwner
+                            requireCallerAutorized()
                             returns(uint256)
     {
         return employees[id].bonus;
@@ -125,11 +135,24 @@ contract ExerciseC6C {
 
                                 )
                                 external
+                                requireCallerAutorized()
     {
         require(employees[id].isRegistered, "Employee is not registered.");
 
         employees[id].sales = employees[id].sales.add(sales);
         employees[id].bonus = employees[id].bonus.add(bonus);
 
+    }
+
+    function authorizeContract(address contractAddress) external requireContractOwner() {
+        authorizedContracts[contractAddress] = true;
+    }
+
+    function deauthorizeContract(address contractAddress) external requireContractOwner() {
+        authorizedContracts[contractAddress] = false;
+    }
+
+    function isCallerAutorized() external view requireContractOwner() returns(bool) {
+        return authorizedContracts[msg.sender];
     }
 }

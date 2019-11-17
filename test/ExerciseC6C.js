@@ -19,6 +19,7 @@ contract('ExerciseC6C', async (accounts) => {
     let expectedBonus = parseInt(sale * 0.07);
 
     // ACT
+    await config.exerciseC6C.authorizeContract(config.exerciseC6CApp.address, {from: config.owner});
     await config.exerciseC6C.registerEmployee(employee.id, employee.isAdmin, employee.address);
     await config.exerciseC6CApp.addSale(employee.id, 400);
     let bonus = await config.exerciseC6C.getEmployeeBonus.call(employee.id);
